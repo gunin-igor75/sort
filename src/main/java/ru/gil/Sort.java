@@ -1,4 +1,5 @@
 package ru.gil;
 
-public class Sort {
+public interface Sort {
+    void  run();
 }
