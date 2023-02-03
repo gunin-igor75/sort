@@ -1,6 +1,7 @@
 package ru.gil;
 
 import ru.gil.sort.CreateListDataRandom;
+import ru.gil.sort.MergeSortInt;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import static ru.gil.ReadWriteHelper.*;
@@ -16,13 +18,18 @@ import static ru.gil.ReadWriteHelper.*;
 public class FileManager {
 
 
-    private Path outFile;
+    private MergeSortInt mergeSortInt;
+    private String outFile;
 
     private List<String> commands = new ArrayList<>();
 
     private final ArrayDeque<Path> inFiles = new ArrayDeque<>();
 
-    public Path getOutFile() {
+    public FileManager(MergeSortInt mergeSortInt) {
+        this.mergeSortInt = mergeSortInt;
+    }
+
+    public String getOutFile() {
         return outFile;
     }
 
@@ -39,27 +46,24 @@ public class FileManager {
         for (String arg : args) {
             if (arg.endsWith("txt")) {
                 Path path = Paths.get(arg);
-                if (Files.notExists(path)) {
-                    String message = String.format("File %s not find ", arg );
-                    LOG.warning(message);
-                    writeMessage(message);
-                    continue;
-                }
-                if (arg.startsWith("out")) {
-                    outFile = path;
-                } else {
-                    inFiles.offer(path);
-                }
+                inFiles.offer(path);
             } else {
                 commands.add(arg);
             }
         }
+    outFile = Objects.requireNonNull(inFiles.poll()).toFile().toString();
+    }
+
+    public void run() throws IOException {
+        mergeSortInt.mainMethod(inFiles,outFile);
     }
 
     public static void main(String[] args) throws IOException {
-        FileManager manager = new FileManager();
+        MergeSortInt merge = new MergeSortInt();
+        FileManager manager = new FileManager(merge);
         CreateListDataRandom service = new CreateListDataRandom(manager);
         manager.parse(args);
-
+        service.createFile();
+        manager.run();
     }
 }

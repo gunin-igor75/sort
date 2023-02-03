@@ -1,184 +1,180 @@
 package ru.gil.sort;
 
-import ru.gil.exception.NotElementHeapException;
+import ru.gil.exception.NotElementFileException;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayDeque;
 import java.util.logging.Logger;
 
 public class MergeSortInt {
     private static Logger LOG = Logger.getLogger(MergeSortInt.class.getName());
-    private HeapSortInt heap;
 
-    public MergeSortInt(HeapSortInt heap) {
-        this.heap = heap;
-    }
-
-
-    public void mainMethod(Path outFile, ArrayDeque<Path> inFiles) {
-        int number = 1;
-        String nameFile = "out" + number + ".txt";
+    public void mainMethod(ArrayDeque<Path> inFiles, String outFile) {
         if (inFiles.size() == 1) {
-            Path inFile = mergeInOneOut(inFiles.poll(), nameFile);
-            if (inFile != null) {
-                inFiles.addFirst(inFile);
-            }
+            mergeFileOne(inFiles.poll(), outFile);
+            return;
         }
+        int numberFile = 1;
         while (inFiles.size() > 1) {
-            Path fileOne = inFiles.poll();
-            Path fileTwo = inFiles.poll();
+            Path fileOne = inFiles.removeFirst();
+            Path fileTwo = inFiles.removeFirst();
+            StringBuilder nameFile = new StringBuilder();
+            nameFile.append("tmp").append(numberFile).append(".txt");
             try (BufferedReader inOne = Files.newBufferedReader(fileOne);
                  BufferedReader inTwo = Files.newBufferedReader(fileTwo);
-                 PrintWriter writer = new PrintWriter(nameFile)) {
+                 PrintWriter writer = new PrintWriter(nameFile.toString())) {
                 mergeSort(inOne, inTwo, writer);
-                // Добавление в начало очереди
-                inFiles.addFirst(Paths.get(nameFile));
-                number++;
-                Files.delete(fileOne);
-                Files.delete(fileTwo);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                inFiles.addFirst(Paths.get(nameFile.toString()));
+                numberFile++;
+                if (fileOne.getFileName().toString().startsWith("tmp")) {
+                    Files.delete(fileOne);
+                }
+                if (fileTwo.getFileName().toString().startsWith("tmp")) {
+                    Files.delete(fileTwo);
+                }
+            } catch (IOException ex) {
+                LOG.severe("File opening error");
+                ex.printStackTrace(System.out);
             }
         }
-        // если куча(не валидные элементы) не пустая
-        if (heap.getSize() != 0) {
-            mergeHeapOut(outFile, inFiles.poll());
+        Path result = Path.of(outFile);
+        try {
+            Files.move(inFiles.getFirst(), result, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            LOG.severe("File opening error");
+            ex.printStackTrace(System.out);
         }
     }
 
     // Сортировка 2 файлов
     private void mergeSort(BufferedReader inOne, BufferedReader inTwo, PrintWriter writer) throws IOException {
-        int numOne = nextInt(inOne);
-        int numTwo = nextInt(inTwo);
-        // Изначально в 2 файлах числа валидные
-        int minCurrent = Math.min(numOne, numTwo);
-        while (inOne.ready() && inTwo.ready()) {
-            if (numOne <= numTwo && numOne >= minCurrent) {
-                minCurrent = numOne;
-                writer.println(numOne);
-                numOne = nextInt(inOne);
-            } else if (numTwo < numOne && numTwo >= minCurrent) {
-                minCurrent = numTwo;
-                writer.println(numTwo);
-                numTwo = nextInt(inTwo);
-            } else if (numOne < minCurrent) {
-                heap.insert(numOne);
-                numOne = nextInt(inOne);
-            } else {
-                heap.insert(numTwo);
-                numTwo = nextInt(inTwo);
+        int n = Integer.MIN_VALUE;
+        int m = Integer.MIN_VALUE;
+        int minCurrent = Integer.MIN_VALUE;
+        try {
+            n = nextInt(inOne);
+            m = nextInt(inTwo);
+            // Изначально в 2 файлах числа валидные
+            minCurrent = Math.min(n, m);
+            while (inOne.ready() && inTwo.ready()) {
+                if (n <= m && n >= minCurrent) {
+                    minCurrent = n;
+                    writer.println(n);
+                    n = nextInt(inOne);
+                } else if (m < n && m >= minCurrent) {
+                    minCurrent = m;
+                    writer.println(m);
+                    m = nextInt(inTwo);
+                } else if (n < minCurrent) {
+                    LOG.warning("Data does not match sorting requirements");
+                    n = nextInt(inTwo);
+                } else {
+                    LOG.warning("Data does not match sorting requirements");
+                    m = nextInt(inTwo);
+                }
             }
+        } catch (NotElementFileException ignored) {
         }
+
         if (!inOne.ready()) {
-            mergeOneTwo(inTwo, minCurrent, numOne, writer);
+            mergeOneTwo(inTwo, minCurrent, m, n, writer);
         } else {
-            mergeOneTwo(inOne, minCurrent, numTwo, writer);
+            mergeOneTwo(inOne, minCurrent, n, m, writer);
         }
     }
 
-    // Сортировка результирующего файла и остатков из кучи
-    private void mergeHeapOut(Path outFile, Path inFile) {
-        int numOne;
-        int numTwo;
-        try (BufferedReader in = new BufferedReader(new FileReader(inFile.toFile()));
-             PrintWriter writer = new PrintWriter(outFile.toString())) {
-            numOne = nextInt(in);
-            numTwo = heap.extractMin();
+    // Слияние остатка с его валидацией
+    private void mergeOneTwo(BufferedReader in, int minCurrent, int n, int m,
+                             PrintWriter out) {
+        boolean flag = false;
+        try {
             while (in.ready()) {
-                if (numOne < numTwo) {
-                    writer.println(numOne);
-                    numOne = nextInt(in);
+                if (n < m && n >= minCurrent) {
+                    out.println(n);
+                    minCurrent = n;
+                    n = nextInt(in);
+                } else if (m <= n && m >= minCurrent) {
+                    out.println(m);
+                    minCurrent = m;
+                    flag = true;
+                    break;
                 } else {
-                    writer.println(numTwo);
-                    try {
-                        numTwo = heap.extractMin();
-                    } catch (NotElementHeapException ex) {
-                        break;
-                    }
+                    n = nextInt(in);
+                    LOG.warning("Data does not match sorting requirements");
                 }
             }
-            if (heap.getSize() == 0) {
-                while (in.ready()) {
-                    numOne = nextInt(in);
-                    writer.println(numOne);
+            if (!flag) {                                                            // Осталось 2 числа
+                if (n < m && n >= minCurrent) {
+                    out.println(n);
+                    out.println(m);
+                } else if (m <= n && m >= minCurrent) {
+                    out.println(m);
+                    out.println(n);
                 }
-            } else {
-                while (heap.getSize() > 0) {
-                    numTwo = heap.extractMin();
-                    writer.println(numTwo);
-                }
+                return;
             }
+            while (in.ready()) {
+                if (n < minCurrent) {
+                    LOG.warning("Data does not match sorting requirements");
+                } else {
+                    out.println(n);
+                    minCurrent = n;
+                }
+                n = nextInt(in);
+            }
+            if (n >= minCurrent) {
+                out.println(n);
+            }
+        } catch (IOException ex) {
+            LOG.severe("File opening error");
+            ex.printStackTrace(System.out);
+        } catch (NotElementFileException ignored) {
+        }
+    }
 
-        } catch (IOException e) {
-            String message = "heap merge error";
-            LOG.warning(message);
-            e.printStackTrace(System.out);
+    // Слияние с валидацией если у нас пришел один входящий файл
+    private void mergeFileOne(Path infile, String outFile) {
+        try (BufferedReader in = Files.newBufferedReader(infile);
+             PrintWriter out = new PrintWriter(outFile)) {
+            int n = nextInt(in);
+            int minCurrent = n;
+            while (in.ready()) {
+                if (n >= minCurrent) {
+                    out.println(n);
+                    minCurrent = n;
+                } else {
+                    LOG.warning("Data does not match sorting requirements");
+                }
+                n = nextInt(in);
+            }
+            if (n >= minCurrent) {                                                  // Последний элемент
+                out.println(n);
+            }
+        } catch (IOException ex) {
+            LOG.severe("File opening error");
+            ex.printStackTrace(System.out);
+        } catch (NotElementFileException ignored) {
         }
     }
 
     // Считывание и парсинг int
-    private Integer nextInt(BufferedReader reader) throws IOException {
+    private int nextInt(BufferedReader reader) throws IOException, NotElementFileException {
         String numberString;
-        Integer number = null;
+        int number;
         while ((numberString = reader.readLine()) != null) {
             try {
                 number = Integer.parseInt(numberString);
-                break;
+                return number;
             } catch (NumberFormatException ex) {
                 LOG.warning("Not a valid number");
             }
         }
-        return number;
-    }
-
-
-    // Слияние
-    private void mergeOneTwo(BufferedReader reader, int minCurrent, int endNum,
-                             PrintWriter writer) throws IOException {
-        int number = nextInt(reader);
-        boolean flag = false;
-        while (reader.ready()) {
-            if (number < endNum && number >= minCurrent) {
-                writer.println(number);
-                minCurrent = number;
-                number = nextInt(reader);
-            } else if (endNum <= number && endNum >= minCurrent) {
-                writer.println(endNum);
-                flag = true;
-            } else if (endNum < minCurrent) {
-                heap.insert(endNum);
-            } else {
-                heap.insert(number);
-            }
-        }
-        if (!flag) {
-            writer.println(endNum);
-        }
-    }
-
-    // Слияние если у нас пришел один входящий файл
-    private Path mergeInOneOut(Path infile, String outFile){
-        try (BufferedReader in = Files.newBufferedReader(infile);
-             PrintWriter writer = new PrintWriter(outFile)) {
-            int number = nextInt(in);
-            int minCurrent = number;
-            while (in.ready()) {
-                if (number >= minCurrent) {
-                    writer.println(number);
-                    minCurrent = number;
-                } else {
-                    heap.insert(number);
-                }
-                number = nextInt(in);
-            }
-            return Paths.get(outFile);
-        } catch (IOException ex) {
-            LOG.severe("File opening error");
-            ex.printStackTrace(System.out);
-        }
-        return null;
+        String message = "Missing numbers in file";
+        LOG.warning(message);
+        throw new NotElementFileException(message);
     }
 }

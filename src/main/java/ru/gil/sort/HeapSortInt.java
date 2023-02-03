@@ -1,6 +1,6 @@
 package ru.gil.sort;
 
-import ru.gil.exception.NotElementHeapException;
+import ru.gil.exception.NotElementFileException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +44,9 @@ public class HeapSortInt {
     }
 
     // Извлечение минимума
-    public Integer extractMin() throws NotElementHeapException {
+    public Integer extractMin() throws NotElementFileException {
         if (values.size() == 0) {
-            throw new NotElementHeapException("Heap is Empty");
+            throw new NotElementFileException("Heap is Empty");
         }
         int tmp = values.get(0);
         values.set(0, values.get(values.size() - 1));
