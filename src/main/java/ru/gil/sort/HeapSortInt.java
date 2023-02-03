@@ -1,9 +1,8 @@
-package ru.gil;
+package ru.gil.sort;
 
 import ru.gil.exception.NotElementHeapException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class HeapSortInt {
@@ -14,6 +13,9 @@ public class HeapSortInt {
     // размер кучи
     private int size;
 
+    public int getSize() {
+        return size;
+    }
 
     public void insert(Integer number) {
         // Присоединение к листу
@@ -82,5 +84,13 @@ public class HeapSortInt {
         for (int i = size / 2 - 1; i >= 0; i--) {
             siftDown(i);
         }
+    }
+
+    public List<Integer> getListSorted() {
+        List<Integer> result = new ArrayList<>(size);
+        while (values.size() != 0) {
+            result.add(extractMin());
+        }
+        return result;
     }
 }

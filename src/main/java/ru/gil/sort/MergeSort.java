@@ -1,4 +1,4 @@
-package ru.gil;
+package ru.gil.sort;
 
 public class MergeSort {
 
