@@ -13,7 +13,7 @@ public class CreateListDataRandom {
 
     FileManager manager;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     public CreateListDataRandom() {
     }
