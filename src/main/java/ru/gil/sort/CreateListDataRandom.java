@@ -36,7 +36,7 @@ public class CreateListDataRandom {
         for (Path path : manager.getInFiles()) {
             try (PrintWriter writer = new PrintWriter(path.toFile())){
                 List<Integer> list = generateListInteger(10);
-                Collections.sort(list);
+                list.sort(Collections.reverseOrder());
                 for (Integer number :list) {
                     writer.println(number);
                 }

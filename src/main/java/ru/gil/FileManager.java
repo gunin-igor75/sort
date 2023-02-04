@@ -1,7 +1,7 @@
 package ru.gil;
 
 import ru.gil.sort.CreateListDataRandom;
-import ru.gil.sort.MergeSortIntASC;
+import ru.gil.sort.MergeSortInt;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class FileManager {
 
 
-    private final MergeSortIntASC mergeSortIntASC;
+    private final MergeSortInt mergeSortInt;
     private  String outFile;
 
     private static final Logger LOG = Logger.getLogger(FileManager.class.getName());
@@ -23,8 +23,8 @@ public class FileManager {
     private final ArrayDeque<Path> inFiles = new ArrayDeque<>();
 
 
-    public FileManager(MergeSortIntASC mergeSortIntASC) {
-        this.mergeSortIntASC = mergeSortIntASC;
+    public FileManager(MergeSortInt mergeSortInt) {
+        this.mergeSortInt = mergeSortInt;
     }
 
     public String getOutFile() {
@@ -60,12 +60,11 @@ public class FileManager {
 
 
     public void run() {
-
-        mergeSortIntASC.mainMethod(inFiles, outFile);
+        mergeSortInt.mainMethod(inFiles, outFile, (x, y) -> y - x);
     }
 
     public static void main(String[] args) {
-        MergeSortIntASC merge = new MergeSortIntASC();
+        MergeSortInt merge = new MergeSortInt();
         FileManager manager = new FileManager(merge);
         CreateListDataRandom service = new CreateListDataRandom(manager);
         manager.parse(args);
