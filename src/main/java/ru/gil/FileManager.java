@@ -1,7 +1,9 @@
 package ru.gil;
 
+import ru.gil.sort.AbstractMergeSort;
 import ru.gil.sort.CreateListDataRandom;
 import ru.gil.sort.MergeSortInt;
+import ru.gil.sort.MergeSortString;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,7 +16,8 @@ import java.util.logging.Logger;
 public class FileManager {
 
 
-    private final MergeSortInt mergeSortInt;
+    private final AbstractMergeSort<String> mergeSortString;
+    private final AbstractMergeSort<Integer> mergeSortInt;
     private  String outFile;
 
     private static final Logger LOG = Logger.getLogger(FileManager.class.getName());
@@ -23,7 +26,8 @@ public class FileManager {
     private final ArrayDeque<Path> inFiles = new ArrayDeque<>();
 
 
-    public FileManager(MergeSortInt mergeSortInt) {
+    public FileManager(AbstractMergeSort<String> mergeSortString, AbstractMergeSort<Integer> mergeSortInt) {
+        this.mergeSortString = mergeSortString;
         this.mergeSortInt = mergeSortInt;
     }
 
@@ -60,15 +64,16 @@ public class FileManager {
 
 
     public void run() {
-        mergeSortInt.mainMethod(inFiles, outFile, (x, y) -> y - x);
+        mergeSortString.mainMethod(inFiles, outFile, String::compareTo);
     }
 
     public static void main(String[] args) {
-        MergeSortInt merge = new MergeSortInt();
-        FileManager manager = new FileManager(merge);
+        AbstractMergeSort<String> mergeString = new MergeSortString();
+        AbstractMergeSort<Integer> mergeInt = new MergeSortInt();
+        FileManager manager = new FileManager(mergeString, mergeInt);
         CreateListDataRandom service = new CreateListDataRandom(manager);
         manager.parse(args);
-        service.createFile();
+        service.createFileString();
         manager.run();
     }
 }

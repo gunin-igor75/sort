@@ -1,8 +1,11 @@
 package ru.gil.sort;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import ru.gil.FileManager;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,13 +34,25 @@ public class CreateListDataRandom {
         return list;
     }
 
+    public List<String> generateListString(int count) {
+        List<String> list = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            list.add(generateString());
+        }
+        return list;
+    }
+
+    private String generateString() {
+        return RandomStringUtils.randomAlphabetic(5);
+    }
+
     // Создание тестовых файлов
-    public void createFile() {
+    public void createFileInt() {
         for (Path path : manager.getInFiles()) {
-            try (PrintWriter writer = new PrintWriter(path.toFile())){
+            try (PrintWriter writer = new PrintWriter(path.toFile())) {
                 List<Integer> list = generateListInteger(10);
                 list.sort(Collections.reverseOrder());
-                for (Integer number :list) {
+                for (Integer number : list) {
                     writer.println(number);
                 }
             } catch (IOException ex) {
@@ -46,6 +61,19 @@ public class CreateListDataRandom {
         }
     }
 
+    public void createFileString() {
+        for (Path path : manager.getInFiles()) {
+            try (PrintWriter writer = new PrintWriter(path.toFile())) {
+                List<String> list = generateListString(10);
+                Collections.sort(list);
+                for (String string : list) {
+                    writer.println(string);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace(System.out);
+            }
+        }
+    }
 
 
     public static void main(String[] args) throws IOException {
