@@ -12,11 +12,11 @@ public class MergeSortInt extends AbstractMergeSort<Integer> {
 
     @Override
     protected Integer next(BufferedReader in) throws IOException, NotElementFileException {
-        String nString;
+        String s;
         int n;
-        while ((nString = in.readLine()) != null) {
+        while ((s = in.readLine()) != null) {
             try {
-                n = Integer.parseInt(nString);
+                n = Integer.parseInt(s.trim());
                 return n;
             } catch (NumberFormatException ex) {
                 LOG.log(Level.WARNING, "Not a valid number ", ex);

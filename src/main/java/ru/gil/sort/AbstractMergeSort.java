@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public abstract class AbstractMergeSort <T> {
     private static final Logger LOG = Logger.getLogger(MergeSortInt.class.getName());
 
-    public void mainMethod(ArrayDeque<Path> inFiles, String outFile, Comparator<T> c) {
+    public void sort(ArrayDeque<Path> inFiles, String outFile, Comparator<T> c) {
         if (inFiles.size() == 1) {
             mergeFileOne(inFiles.poll(), outFile, c);
             return;
@@ -54,11 +54,11 @@ public abstract class AbstractMergeSort <T> {
         }
     }
 
-    // Сортировка 2 файлов
+    // Сортировка 2 файлов пока один из них не закончится
     protected void mergeSort(BufferedReader inOne, BufferedReader inTwo, PrintWriter out, Comparator<T> c) {
         T n;
         T m;
-        T current;
+        T current;      // текущий минимум или максимум в зависимости от вида сортировки
         try {
             n = next(inOne);
             m = next(inTwo);
@@ -112,7 +112,7 @@ public abstract class AbstractMergeSort <T> {
                     LOG.log(Level.WARNING, "Data does not match sorting requirements {0}", n);
                 }
             }
-            if (!flag) {                                                            // Осталось 2 числа
+            if (!flag) {
                 if (c.compare(n, m) < 0 && c.compare(n, current) >= 0) {
                     out.println(n);
                     out.println(m);
@@ -153,7 +153,7 @@ public abstract class AbstractMergeSort <T> {
                 }
                 n = next(in);
             }
-            if (c.compare(n, current) >= 0) {                                                  // Последний элемент
+            if (c.compare(n, current) >= 0) {
                 out.println(n);
             }
         } catch (IOException ex) {
@@ -162,6 +162,6 @@ public abstract class AbstractMergeSort <T> {
         }
     }
 
-    // Считывание и парсинг int
+    // Считывание и парсинг данных
     protected abstract T next(BufferedReader in) throws IOException, NotElementFileException;
 }

@@ -1,42 +1,38 @@
 package ru.gil.sort;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import ru.gil.FileManager;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class CreateListDataRandom {
 
-    FileManager manager;
+    private final List<Integer> listIntFiles = new ArrayList<>();
+    private final List<String> listStringFiles = new ArrayList<>();
 
     private final Random random = new Random();
 
-    public CreateListDataRandom() {
+    public List<Integer> getListIntFiles() {
+        return listIntFiles;
     }
 
-    public CreateListDataRandom(FileManager manager) {
-        this.manager = manager;
+    public List<String> getListStringFiles() {
+        return listStringFiles;
     }
 
-    // генерация списка случайными целыми числами
-    public List<Integer> generateListInteger(int count) {
-        List<Integer> list = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
+    private List<Integer> generateListInteger() {
+        List<Integer> list = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
             list.add(random.nextInt(1000));
         }
         return list;
     }
 
-    public List<String> generateListString(int count) {
-        List<String> list = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
+    private List<String> generateListString() {
+        List<String> list = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
             list.add(generateString());
         }
         return list;
@@ -46,12 +42,30 @@ public class CreateListDataRandom {
         return RandomStringUtils.randomAlphabetic(5);
     }
 
-    // Создание тестовых файлов
-    public void createFileInt() {
-        for (Path path : manager.getInFiles()) {
+    public void createFileIntASK(int n) {
+        for (int i = 1; i <= n; i++) {
+        Path path = Paths.get("in" + i + ".txt");
+        try (PrintWriter writer = new PrintWriter(path.toFile())) {
+            List<Integer> list = generateListInteger();
+            Collections.sort(list);
+            listIntFiles.addAll(list);
+            for (Integer number : list) {
+                writer.println(number);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.out);
+        }
+    }
+        Collections.sort(listIntFiles);
+}
+
+    public void createFileIntDESC(int n) {
+        for (int i = 1; i <= n; i++) {
+            Path path = Paths.get("in" + i + ".txt");
             try (PrintWriter writer = new PrintWriter(path.toFile())) {
-                List<Integer> list = generateListInteger(10);
+                List<Integer> list = generateListInteger();
                 list.sort(Collections.reverseOrder());
+                listIntFiles.addAll(list);
                 for (Integer number : list) {
                     writer.println(number);
                 }
@@ -59,13 +73,16 @@ public class CreateListDataRandom {
                 ex.printStackTrace(System.out);
             }
         }
+        listIntFiles.sort(Comparator.reverseOrder());
     }
 
-    public void createFileString() {
-        for (Path path : manager.getInFiles()) {
+    public void createFileStringASK(int n) {
+        for (int i = 1; i <= n; i++) {
+            Path path = Paths.get("in" + i + ".txt");
             try (PrintWriter writer = new PrintWriter(path.toFile())) {
-                List<String> list = generateListString(10);
+                List<String> list = generateListString();
                 Collections.sort(list);
+                listStringFiles.addAll(list);
                 for (String string : list) {
                     writer.println(string);
                 }
@@ -73,9 +90,23 @@ public class CreateListDataRandom {
                 ex.printStackTrace(System.out);
             }
         }
+        Collections.sort(listStringFiles);
     }
 
-
-    public static void main(String[] args) throws IOException {
+    public void createFileStringDESC(int n) {
+        for (int i = 1; i <= n; i++) {
+            Path path = Paths.get("in" + i + ".txt");
+            try (PrintWriter writer = new PrintWriter(path.toFile())) {
+                List<String> list = generateListString();
+                list.sort(Comparator.reverseOrder());
+                listStringFiles.addAll(list);
+                for (String string : list) {
+                    writer.println(string);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace(System.out);
+            }
+        }
+        listStringFiles.sort(Comparator.reverseOrder());
     }
 }
