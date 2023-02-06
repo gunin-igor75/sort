@@ -23,9 +23,9 @@ public class CreateListDataRandom {
     }
 
     private List<Integer> generateListInteger() {
-        List<Integer> list = new ArrayList<>(10);
-        for (int i = 0; i < 10; i++) {
-            list.add(random.nextInt(1000));
+        List<Integer> list = new ArrayList<>(1000000);
+        for (int i = 0; i < 1000000; i++) {
+            list.add(random.nextInt(Integer.MAX_VALUE));
         }
         return list;
     }
